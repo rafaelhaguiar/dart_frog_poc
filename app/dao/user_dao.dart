@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:mysql1/mysql1.dart';
-
 import '../models/user_model.dart';
 import 'db_helper.dart';
 
@@ -21,18 +18,21 @@ class UserDAO {
     }
   }
 
-  static Future<UserModel> getUser(String email) async {
+  static Future<UserModel?> getUser(String email) async {
     try {
       final conn = await DBHelper.getConnection();
       final result = await conn.query(
-        'SELECT email, name FROM $_tableUser where email = $email',
+        'SELECT email, name FROM $_tableUser where email = ?',
+        [email],
       );
       await conn.close();
 
       if (result.isNotEmpty) {
-        return UserModel(name: 'name', email: 'email', password: 'password');
+        for (final row in result) {
+          return UserModel(name: row[0] as String, email: row[1] as String);
+        }
       }
-      throw MySqlClientError('erro ao inserir usuário');
+      return null;
     } catch (e) {
       rethrow;
     }

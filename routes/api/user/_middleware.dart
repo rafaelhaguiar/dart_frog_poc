@@ -1,25 +1,27 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_frog/dart_frog.dart';
 
+import '../../../app/models/user_model.dart';
+
 Handler middleware(Handler handler) {
   return (context) async {
-    if (context.request.method.name == 'post') {
-      final keys = jsonDecode(await context.request.body()) as Map;
-      if (keys.containsKey('email') &&
-          keys.containsKey('name') &&
-          keys.containsKey('password')) {
+    try {
+      if (context.request.method.name == 'post') {
+        final data = await context.request.body();
+        UserModel.fromJson(data);
         return handler(context);
       }
-
-      return Response(statusCode: HttpStatus.badRequest, body: keys.toString());
+      if (context.request.method.name == 'get') {
+        if (context.request.uri.queryParameters.containsKey('email')) {
+          return handler(context);
+        }
+        return Response(statusCode: HttpStatus.badRequest, body: 'vacilão');
+      }
+    } catch (e) {
+      return Response(statusCode: HttpStatus.badRequest, body: 'vacilão');
     }
-    return handler(context);
+
+    return Response(statusCode: HttpStatus.methodNotAllowed, body: 'vacilão');
   };
 }
-     //if (keys.containsKey('email') &&
-     //    keys.containsKey('name') &&
-     //    keys.containsKey('password')) {
-     //  return handler(context);
-     //}
